@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyber-Industrial Tic-Tac-Toe</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- <style>
+        :root {
+            --bg-dark: #0a0d14;
+            --panel-bg: rgba(22, 27, 38, 0.85);
+            --panel-border: #2a3447;
+            --text-light: #e2e8f0;
+            --text-muted: #64748b;
+            --cyan-glow: #00f3ff;
+            --pink-glow: #ff007f;
+            --laser-glow: #d88eff;
+            --gold-glow: #f59e0b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Animated Graphic Background Elements */
+        #bg-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .grid-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        /* Main Console Layout */
+        .console-container {
+            position: relative;
+            z-index: 10;
+            background: var(--panel-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--panel-border);
+            border-radius: 24px;
+            box-shadow: 
+                0 0 50px rgba(0, 0, 0, 0.8),
+                0 0 20px rgba(0, 243, 255, 0.1);
+            width: 900px;
+            padding: 30px;
+            display: grid;
+            grid-template-columns: 200px 1fr 200px;
+            gap: 20px;
+        }
+
+        /* Header */
+        .console-header {
+            grid-column: span 3;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .console-header h1 {
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: var(--text-light);
+            letter-spacing: 6px;
+            text-transform: uppercase;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+        }
+
+        /* Side Panels */
+        .side-panel {
+            background: radial-gradient( circle , rgba(0, 242, 255, 0.067) 0%, transparent 100%);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 15px;
+            align-items: center;
+        }
+
+        /* Board Area */
+        .game-center {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(3, 110px);
+            grid-template-rows: repeat(3, 110px);
+            gap: 15px;
+            background: rgba(10, 14, 23, 0.8);
+            padding: 20px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5);
+            position: relative;
+        }
+
+        .cell {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2.5rem;
+            font-weight: 900;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .cell:hover:not(.occupied) {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: scale(1.02);
+        }
+
+        /* Token Glows */
+        .cell.x {
+            color: var(--cyan-glow);
+            text-shadow: 0 0 15px var(--cyan-glow);
+        }
+
+        .cell.o {
+            color: var(--pink-glow);
+            text-shadow: 0 0 15px var(--pink-glow);
+        }
+
+        /* Winning Line Laser */
+        .strike-laser {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+            display: none;
+        }
+
+        .strike-laser.active {
+            display: block;
+        }
+
+        .laser-line {
+            stroke: #fff;
+            stroke-width: 6;
+            stroke-linecap: round;
+            filter: drop-shadow(0 0 5px #fff) 
+                    drop-shadow(0 0 10px var(--laser-glow)) 
+                    drop-shadow(0 0 20px var(--laser-glow));
+        }
+
+        /* Stat Widgets */
+        .widget {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 12px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .widget-title {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+        }
+
+        .widget-value {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--text-light);
+        }
+
+        .widget-value.winner-text {
+            color: var(--cyan-glow);
+            text-shadow: 0 0 10px rgba(0, 243, 255, 0.5);
+        }
+
+        .widget-value.loser-text {
+            color: var(--pink-glow);
+            text-shadow: 0 0 10px rgba(255, 0, 127, 0.5);
+        }
+
+        .widget-value.draw-text {
+            color: var(--gold-glow);
+            text-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
+        }
+
+        .status-bar {
+            margin-top: 20px;
+            font-weight: 700;
+            color: var(--text-light);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        /* Controls */
+        .controls-row {
+            grid-column: span 3;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            padding-top: 20px;
+        }
+
+        .btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 8px;
+            color: var(--text-light);
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            padding: 12px 28px;
+            text-transform: uppercase;
+            transition: all 0.2s ease;
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+        }
+    </style> -->
+</head>
+<body>
+
+<!-- Animated Graphic Background Canvas -->
+<canvas id="bg-canvas"></canvas>
+<div class="grid-overlay"></div>
+
+<!-- Game UI Console -->
+<div class="console-container">
+    
+    <header class="console-header">
+        <h1>Tic-Tac-Toe</h1>
+    </header>
+
+    <!-- Left Side Panel (Player X & Winner Stats) -->
+    <aside class="side-panel">
+        <div class="widget">
+            <div class="widget-title">Player X (You)</div>
+            <div class="widget-value" id="scoreX">0</div>
+        </div>
+        <div class="widget">
+            <div class="widget-title">Last Winner</div>
+            <div class="widget-value winner-text" id="lastWinner">-</div>
+        </div>
+        <div class="widget">
+            <div class="widget-title">Draws</div>
+            <div class="widget-value draw-text" id="drawsCount">0</div>
+        </div>
+    </aside>
+
+    <!-- Center Board Area -->
+    <main class="game-center">
+        <div class="board" id="board">
+            <div class="cell" data-index="0"></div>
+            <div class="cell" data-index="1"></div>
+            <div class="cell" data-index="2"></div>
+            <div class="cell" data-index="3"></div>
+            <div class="cell" data-index="4"></div>
+            <div class="cell" data-index="5"></div>
+            <div class="cell" data-index="6"></div>
+            <div class="cell" data-index="7"></div>
+            <div class="cell" data-index="8"></div>
+            
+            <svg class="strike-laser" id="laserCanvas">
+                <line class="laser-line" id="laserLine" x1="0" y1="0" x2="0" y2="0"/>
+            </svg>
+        </div>
+        
+        <div class="status-bar" id="statusDisplay">Player X's Turn</div>
+    </main>
+
+    <!-- Right Side Panel (Player O & Loser Stats) -->
+    <aside class="side-panel">
+        <div class="widget">
+            <div class="widget-title">Player O (CPU)</div>
+            <div class="widget-value" id="scoreO">0</div>
+        </div>
+        <div class="widget">
+            <div class="widget-title">Last Loser</div>
+            <div class="widget-value loser-text" id="lastLoser">-</div>
+        </div>
+        <div class="widget">
+            <div class="widget-title">Draws</div>
+            <div class="widget-value draw-text" id="drawsCountRight">0</div>
+        </div>
+    </aside>
+
+    <footer class="controls-row">
+        <button class="btn" onclick="resetBoard()">New Game</button>
+        <button class="btn" onclick="resetMatch()">Reset Match</button>
+    </footer>
+</div>
+
+<!-- <script>
+    /* ================= BACKGROUND GRAPHICS (CANVAS) ================= */
+    const canvas = document.getElementById('bg-canvas');
+    const ctx = canvas.getContext('2d');
+
+    let particles = [];
+    const particleCount = 45;
+
+    function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    class Particle {
+        constructor() {
+            this.x = Math.random() * canvas.width;
+            this.y = Math.random() * canvas.height;
+            this.vx = (Math.random() - 0.5) * 0.5;
+            this.vy = (Math.random() - 0.5) * 0.5;
+            this.radius = Math.random() * 2 + 1;
+        }
+
+        update() {
+            this.x += this.vx;
+            this.y += this.vy;
+
+            if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+            if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+        }
+
+        draw() {
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(0, 243, 255, 0.3)';
+            ctx.fill();
+        }
+    }
+
+    for (let i = 0; i < particleCount; i++) {
+        particles.push(new Particle());
+    }
+
+    function animateBackground() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        for (let i = 0; i < particles.length; i++) {
+            particles[i].update();
+            particles[i].draw();
+
+            for (let j = i + 1; j < particles.length; j++) {
+                const dx = particles[i].x - particles[j].x;
+                const dy = particles[i].y - particles[j].y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+
+                if (dist < 150) {
+                    ctx.beginPath();
+                    ctx.moveTo(particles[i].x, particles[i].y);
+                    ctx.lineTo(particles[j].x, particles[j].y);
+                    ctx.strokeStyle = `rgba(0, 243, 255, ${0.15 * (1 - dist / 150)})`;
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+                }
+            }
+        }
+        requestAnimationFrame(animateBackground);
+    }
+    animateBackground();
+
+    /* ================= GAME LOGIC ================= */
+    const boardEl = document.getElementById('board');
+    const cells = document.querySelectorAll('.cell');
+    const statusDisplay = document.getElementById('statusDisplay');
+    const laserCanvas = document.getElementById('laserCanvas');
+    const laserLine = document.getElementById('laserLine');
+    
+    let boardState = ["", "", "", "", "", "", "", "", ""];
+    let isGameActive = true;
+    let currentPlayer = "X";
+    
+    // Game Statistics
+    let scores = { X: 0, O: 0 };
+    let draws = 0;
+
+    const winningConditions = [
+        [0, 1, 2], [3, 4, 5], [6, 7, 8],
+        [0, 3, 6], [1, 4, 7], [2, 5, 8],
+        [0, 4, 8], [2, 4, 6]
+    ];
+
+    function handleCellClick(e) {
+        const clickedCell = e.target;
+        const clickedIndex = parseInt(clickedCell.getAttribute('data-index'));
+
+        if (boardState[clickedIndex] !== "" || !isGameActive) return;
+
+        makeMove(clickedCell, clickedIndex, currentPlayer);
+        evaluateRules();
+    }
+
+    function makeMove(cell, index, player) {
+        boardState[index] = player;
+        cell.textContent = player;
+        cell.classList.add(player.toLowerCase(), 'occupied');
+    }
+
+    function evaluateRules() {
+        let roundWon = false;
+        let winCombo = null;
+
+        for (let i = 0; i < winningConditions.length; i++) {
+            const [a, b, c] = winningConditions[i];
+            if (boardState[a] && boardState[a] === boardState[b] && boardState[a] === boardState[c]) {
+                roundWon = true;
+                winCombo = winningConditions[i];
+                break;
+            }
+        }
+
+        if (roundWon) {
+            const loser = currentPlayer === "X" ? "O" : "X";
+            statusDisplay.textContent = `Player ${currentPlayer} Wins!`;
+            isGameActive = false;
+            scores[currentPlayer]++;
+            
+            // Update Stats Display
+            document.getElementById('lastWinner').textContent = currentPlayer;
+            document.getElementById('lastLoser').textContent = loser;
+            
+            updateScoreboard();
+            triggerLaserStrike(winCombo);
+            return;
+        }
+
+        if (!boardState.includes("")) {
+            statusDisplay.textContent = "Match Tied!";
+            isGameActive = false;
+            draws++;
+            document.getElementById('drawsCount').textContent = draws;
+            document.getElementById('drawsCountRight').textContent = draws;
+            return;
+        }
+
+        currentPlayer = currentPlayer === "X" ? "O" : "X";
+        statusDisplay.textContent = `${currentPlayer}'s Turn`;
+    }
+
+    function triggerLaserStrike(combo) {
+        const firstCell = cells[combo[0]];
+        const lastCell = cells[combo[2]];
+        
+        const boardRect = boardEl.getBoundingClientRect();
+        const firstRect = firstCell.getBoundingClientRect();
+        const lastRect = lastCell.getBoundingClientRect();
+
+        const x1 = (firstRect.left + firstRect.width / 2) - boardRect.left;
+        const y1 = (firstRect.top + firstRect.height / 2) - boardRect.top;
+        const x2 = (lastRect.left + lastRect.width / 2) - boardRect.left;
+        const y2 = (lastRect.top + lastRect.height / 2) - boardRect.top;
+
+        laserLine.setAttribute('x1', x1);
+        laserLine.setAttribute('y1', y1);
+        laserLine.setAttribute('x2', x2);
+        laserLine.setAttribute('y2', y2);
+
+        laserCanvas.classList.add('active');
+    }
+
+    function updateScoreboard() {
+        document.getElementById('scoreX').textContent = scores.X;
+        document.getElementById('scoreO').textContent = scores.O;
+    }
+
+    function resetBoard() {
+        boardState = ["", "", "", "", "", "", "", "", ""];
+        isGameActive = true;
+        currentPlayer = "X";
+        statusDisplay.textContent = "Player X's Turn";
+        laserCanvas.classList.remove('active');
+        cells.forEach(cell => {
+            cell.textContent = "";
+            cell.className = "cell";
+        });
+    }
+
+    function resetMatch() {
+        scores = { X: 0, O: 0 };
+        draws = 0;
+        document.getElementById('lastWinner').textContent = "-";
+        document.getElementById('lastLoser').textContent = "-";
+        document.getElementById('drawsCount').textContent = "0";
+        document.getElementById('drawsCountRight').textContent = "0";
+        updateScoreboard();
+        resetBoard();
+    }
+
+    cells.forEach(cell => cell.addEventListener('click', handleCellClick));
+</script> -->
+
+<script src="script.js"></script>
+
+</body>
+</html>
