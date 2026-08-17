@@ -2,6 +2,9 @@
 
 A modern Tic Tac Toe game built using HTML, CSS, and JavaScript.
 
+## Live Demo
+[live Demo :- ](https://guptaadya2005-ship-it.github.io/tic-tac-toe-game/)
+
 ## Features
 
 - 🎨 Modern Glassmorphism UI
